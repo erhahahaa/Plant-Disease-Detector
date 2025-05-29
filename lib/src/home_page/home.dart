@@ -16,7 +16,7 @@ import 'package:plant_disease_detector/src/suggestions_page/suggestions.dart';
 import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
-  const Home({Key? key}) : super(key: key);
+  const Home({super.key});
 
   static const routeName = '/';
 
@@ -25,24 +25,76 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
+  late DiseaseService diseaseService;
+  late HiveService hiveService;
+  late Classifier classifier;
+  Disease? disease;
+
+  @override
+  void initState() {
+    super.initState();
+
+    diseaseService = Provider.of<DiseaseService>(context, listen: false);
+    hiveService = HiveService();
+    classifier = Classifier();
+  }
+
   @override
   void dispose() {
     Hive.close();
+    classifier.close();
+    diseaseService.dispose();
     super.dispose();
+  }
+
+  void noImageSelected() {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text("No image selected"),
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
+  Future<void> _getDisease(ImageSource source) async {
+    double confidence = 0;
+
+    final result = await classifier.getDisease(source);
+    if (result == null) {
+      noImageSelected();
+      return;
+    }
+    disease = Disease(
+      name: result[0]["label"],
+      imagePath: classifier.imageFile.path,
+    );
+
+    confidence = result[0]['confidence'];
+
+    // Check confidence
+    if (confidence > 0.8) {
+      if (disease == null) {
+        noImageSelected();
+        return;
+      }
+      // Set disease for Disease Service
+      diseaseService.setDiseaseValue(disease!);
+
+      // Save disease
+      hiveService.addDisease(disease!);
+
+      if (context.mounted) {
+        Navigator.restorablePushNamed(context, Suggestions.routeName);
+      }
+    } else {
+      // Display unsure message
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // Get disease from provider
-    final _diseaseService = Provider.of<DiseaseService>(context);
-
-    // Hive service
-    HiveService _hiveService = HiveService();
-
     // Data
     Size size = MediaQuery.of(context).size;
-    final Classifier classifier = Classifier();
-    late Disease _disease;
 
     return Scaffold(
       floatingActionButtonLocation: FloatingActionButtonLocation.centerFloat,
@@ -51,81 +103,25 @@ class _HomeState extends State<Home> {
         spacing: 10,
         children: [
           SpeedDialChild(
-            child: const FaIcon(
-              FontAwesomeIcons.file,
-              color: kWhite,
-            ),
+            child: const FaIcon(FontAwesomeIcons.file, color: kWhite),
             label: "Choose image",
             backgroundColor: kMain,
-            onTap: () async {
-              late double _confidence;
-              await classifier.getDisease(ImageSource.gallery).then((value) {
-                _disease = Disease(
-                    name: value![0]["label"],
-                    imagePath: classifier.imageFile.path);
-
-                _confidence = value[0]['confidence'];
-              });
-              // Check confidence
-              if (_confidence > 0.8) {
-                // Set disease for Disease Service
-                _diseaseService.setDiseaseValue(_disease);
-
-                // Save disease
-                _hiveService.addDisease(_disease);
-
-                Navigator.restorablePushNamed(
-                  context,
-                  Suggestions.routeName,
-                );
-              } else {
-                // Display unsure message
-
-              }
-            },
+            onTap: () async => await _getDisease(ImageSource.gallery),
           ),
           SpeedDialChild(
-            child: const FaIcon(
-              FontAwesomeIcons.camera,
-              color: kWhite,
-            ),
+            child: const FaIcon(FontAwesomeIcons.camera, color: kWhite),
             label: "Take photo",
             backgroundColor: kMain,
-            onTap: () async {
-              late double _confidence;
-
-              await classifier.getDisease(ImageSource.camera).then((value) {
-                _disease = Disease(
-                    name: value![0]["label"],
-                    imagePath: classifier.imageFile.path);
-
-                _confidence = value[0]['confidence'];
-              });
-
-              // Check confidence
-              if (_confidence > 0.8) {
-                // Set disease for Disease Service
-                _diseaseService.setDiseaseValue(_disease);
-
-                // Save disease
-                _hiveService.addDisease(_disease);
-
-                Navigator.restorablePushNamed(
-                  context,
-                  Suggestions.routeName,
-                );
-              } else {
-                // Display unsure message
-
-              }
-            },
+            onTap: () async => await _getDisease(ImageSource.camera),
           ),
         ],
       ),
       body: Container(
         decoration: const BoxDecoration(
           image: DecorationImage(
-              image: AssetImage('assets/images/bg.jpg'), fit: BoxFit.cover),
+            image: AssetImage('assets/images/bg.jpg'),
+            fit: BoxFit.cover,
+          ),
         ),
         child: CustomScrollView(
           slivers: [
@@ -133,7 +129,7 @@ class _HomeState extends State<Home> {
             TitleSection('Instructions', size.height * 0.066),
             InstructionsSection(size),
             TitleSection('Your History', size.height * 0.066),
-            HistorySection(size, context, _diseaseService)
+            HistorySection(size, context, diseaseService),
           ],
         ),
       ),

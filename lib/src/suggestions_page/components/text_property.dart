@@ -3,11 +3,10 @@ import 'package:plant_disease_detector/constants/constants.dart';
 
 class TextProperty extends StatelessWidget {
   const TextProperty(
-      {Key? key,
+      {super.key,
       required this.title,
       required this.value,
-      required this.height})
-      : super(key: key);
+      required this.height});
 
   final String title;
   final double height;
