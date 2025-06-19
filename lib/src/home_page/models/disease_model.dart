@@ -19,6 +19,9 @@ class Disease extends HiveObject {
   @HiveField(4)
   late DateTime dateTime;
 
+  @HiveField(5)
+  String? diseaseName;
+
   Disease({required this.name, required this.imagePath}) {
     dateTime = DateTime.now();
 

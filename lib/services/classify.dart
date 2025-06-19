@@ -1,17 +1,20 @@
 import 'dart:io';
 
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:image/image.dart' as img;
 import 'package:image_picker/image_picker.dart';
 import 'package:tflite_flutter/tflite_flutter.dart';
 
 class Classifier {
   Classifier() {
+    _loadLabel();
     _loadModel();
   }
 
   late File imageFile;
   late List outputs;
+  List<String> labels = [];
   Interpreter? interpreter;
   bool _modelLoaded = false;
 
@@ -21,6 +24,9 @@ class Classifier {
     }
     if (!_modelLoaded) {
       await _waitForModelLoad();
+    }
+    if (labels.isEmpty) {
+      await _loadLabel();
     }
 
     final picker = ImagePicker();
@@ -33,11 +39,28 @@ class Classifier {
     return result;
   }
 
+  Future<void> _loadLabel() async {
+    final raw = await rootBundle.loadString('assets/model/labels.txt');
+    labels =
+        raw
+            .split(';\n')
+            .map((e) => e.trim())
+            .where((e) => e.isNotEmpty)
+            .toList();
+    debugPrint("[Classifier] Labels loaded: ${labels.length}");
+    for (int i = 0; i < labels.length; i++) {
+      debugPrint("[Classifier] Label $i: ${labels[i]}");
+    }
+  }
+
   Future<void> _loadModel() async {
     try {
       if (_modelLoaded) {
         debugPrint("[Classifier] Model already loaded");
         return;
+      }
+      if (labels.isEmpty) {
+        await _loadLabel();
       }
       interpreter = await Interpreter.fromAsset(
         "assets/model/model_unquant.tflite",
@@ -59,6 +82,14 @@ class Classifier {
   Future<List?> classifyImage(File image) async {
     if (interpreter == null) {
       throw Exception("Model not loaded");
+    }
+
+    if (!_modelLoaded) {
+      await _waitForModelLoad();
+    }
+
+    if (labels.isEmpty) {
+      await _loadLabel();
     }
 
     try {
@@ -131,10 +162,15 @@ class Classifier {
 
       List<Map<String, dynamic>> results = [];
       for (int i = 0; i < probabilities.length; i++) {
-        results.add({
-          "label": "Disease ${i + 1}",
-          "confidence": probabilities[i],
-        });
+        if (i >= labels.length) {
+          debugPrint("[Classifier] Warning: More probabilities than labels");
+          results.add({
+            "label": "Unknown Disease ${i + 1}",
+            "confidence": probabilities[i],
+          });
+          continue;
+        }
+        results.add({"label": labels[i], "confidence": probabilities[i]});
       }
 
       results.sort((a, b) => b["confidence"].compareTo(a["confidence"]));
