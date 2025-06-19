@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:plant_disease_detector/constants/constants.dart';
 
 class InstructionsSection extends SliverFixedExtentList {
-  InstructionsSection(Size size, {Key? key})
+  InstructionsSection(Size size, {super.key})
       : super(
-          key: key,
           delegate: SliverChildBuilderDelegate(
             (BuildContext context, index) {
               return Padding(

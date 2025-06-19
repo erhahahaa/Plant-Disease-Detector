@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:plant_disease_detector/constants/constants.dart';
 
 class GreetingSection extends SliverFixedExtentList {
-  GreetingSection(double height, {Key? key})
+  GreetingSection(double height, {super.key})
       : super(
-          key: key,
           delegate: SliverChildBuilderDelegate(
             (BuildContext context, index) {
               return Padding(

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 
 class PlantImage extends StatelessWidget {
-  const PlantImage({Key? key, required this.size, required this.imageFile}) : super(key: key);
+  const PlantImage({super.key, required this.size, required this.imageFile});
 
   final Size size;
   final File imageFile;

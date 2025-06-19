@@ -9,16 +9,16 @@ import 'package:plant_disease_detector/src/suggestions_page/components/text_prop
 import 'package:provider/provider.dart';
 
 class Suggestions extends StatelessWidget {
-  const Suggestions({Key? key}) : super(key: key);
+  const Suggestions({super.key});
 
   static const routeName = '/suggestions';
 
   @override
   Widget build(BuildContext context) {
     // Get disease from provider
-    final _diseaseService = Provider.of<DiseaseService>(context);
+    final diseaseService = Provider.of<DiseaseService>(context);
 
-    Disease _disease = _diseaseService.disease;
+    Disease disease = diseaseService.disease;
     Size size = MediaQuery.of(context).size;
 
     return Scaffold(
@@ -39,7 +39,7 @@ class Suggestions extends StatelessWidget {
                     child: Center(
                         child: PlantImage(
                   size: size,
-                  imageFile: File(_disease.imagePath),
+                  imageFile: File(disease.imagePath),
                 ))),
                 Divider(
                   thickness: (0.0066 * size.height),
@@ -51,17 +51,17 @@ class Suggestions extends StatelessWidget {
                     children: [
                       TextProperty(
                         title: 'Disease name',
-                        value: _disease.name,
+                        value: disease.name,
                         height: size.height,
                       ),
                       TextProperty(
                         title: 'Possible causes',
-                        value: _disease.possibleCauses,
+                        value: disease.possibleCauses,
                         height: size.height,
                       ),
                       TextProperty(
                         title: 'Possible solution',
-                        value: _disease.possibleSolution,
+                        value: disease.possibleSolution,
                         height: size.height,
                       ),
                     ],
