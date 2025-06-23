@@ -1,15 +1,10 @@
-Pepper Bell Bacterial Spot
-Pepper Bell Healthy
-Potato Early Blight
-Potato Healthy
-Potato Late Blight
-Tomato Bacterial Spot
-Tomato Early Blight
-Tomato Healthy
-Tomato Late Blight
-Tomato Leaf Mold
-Tomato Septoria Leaf Spot
-Tomato Spotted Spider Mites
-Tomato Target Spot
-Tomato Mosaic Virus
-Tomato Yellow Leaf Curl Virus
+Bacterial Sport;
+Early Blight;
+Late Blight;
+Leaf Mold;
+Septoria Leaf Spot;
+Spider Mites Two Spotted Spider Mites;
+Target Spot;
+Yellow Leaf Curl Virus;
+Mosaic Virus;
+Healthy;

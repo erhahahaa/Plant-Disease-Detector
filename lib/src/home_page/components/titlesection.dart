@@ -2,9 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:plant_disease_detector/constants/constants.dart';
 
 class TitleSection extends SliverFixedExtentList {
-  TitleSection(String title, double height, {Key? key})
+  TitleSection(String title, double height, {super.key})
       : super(
-          key: key,
           delegate: SliverChildBuilderDelegate(
             (BuildContext context, index) {
               return Column(

@@ -10,9 +10,8 @@ import 'package:plant_disease_detector/src/suggestions_page/suggestions.dart';
 
 class HistorySection extends SliverFixedExtentList {
   HistorySection(Size size, BuildContext context, DiseaseService diseaseService,
-      {Key? key})
+      {super.key})
       : super(
-          key: key,
           delegate: SliverChildBuilderDelegate(
             (BuildContext context, index) {
               return ValueListenableBuilder<Box<Disease>>(
